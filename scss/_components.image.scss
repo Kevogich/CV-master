@@ -1,4 +1,4 @@
-$avatar-r: 50px;
+$avatar-r: 240px;
 
 #avatar {
     width: $avatar-r;
@@ -13,11 +13,11 @@ $avatar-r: 50px;
 
 .circle-img {
     display: center;
-    width: 70px;
-    height: 70px;
-    border-radius: 35%;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
     background-color: $clr-dark;
-    padding: 5px;
+    padding: 15px;
     
     &:hover {
         opacity: 0.8;
