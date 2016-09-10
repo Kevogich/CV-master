@@ -6,6 +6,152 @@ body {
     color: white;
     font-family: 'Open Sans', sans-serif;
     font-size: 12px;
+
+    @import 'https://fonts.googleapis.com/css?family=PT+Sans+Narrow';
+
+@mixin centerV($height) {
+	position: absolute;
+	top: 50%;
+	margin-top: calc(-0.5 * #{$height});
+}
+@mixin centerH($width) {
+	position: absolute;
+	left: 50%;
+	margin-left: calc(-0.5 * #{$width});
+}
+
+$facesize: 140px; // Not including border
+$strapwidth: 90px;
+$hourheight: 28px;
+$minheight: 42px;
+$secheight: 56px;
+
+$black: #292929;
+$blacktrans: rgba(0, 0, 0, 0.6);
+$gold: #CDB380;
+$grey: #4a4a4a;
+$red: #BF4A67;
+$turq: #47C9AF;
+$mint: #D9F5BE;
+
+html, body {
+	width: 100%;
+	height: 100%;
+}
+body {
+	position: relative;
+	font: {
+		size: 12px;
+		family: 'PT Sans Narrow';
+	}
+	background: linear-gradient(to bottom left, $turq 0%, $mint 100%) 100% no-repeat;
+}
+.watch {
+	width: 150px;
+	height: 100%;
+	@include centerH(150px);
+}
+.strap {
+	background: $black;
+	height: 100%;
+	width: $strapwidth;
+	border-left: 5px solid $grey;
+	border-right: 5px solid $grey;
+	@include centerH(100px);
+}
+.face {
+	background: $black;
+	border: 5px solid $gold;
+	width: $facesize;
+	height: $facesize;
+	@include centerV(150px);
+	box-shadow: 0 0 80px 0 $blacktrans, inset 0 0 50px 0 $blacktrans;
+}
+.numeral {
+	background: $grey;
+	height: 20px;
+	width: 4px;
+}
+.n-12, .n-6 {
+	@include centerH(4px);
+}
+.n-3, .n-9 {
+	height: 4px;
+	width: 20px;
+	@include centerV(4px);
+}
+.n-12 {
+	top: 5px;
+}
+.n-6 {
+	bottom: 5px;
+}
+.n-3 {
+	right: 5px;
+}
+.n-9 {
+	left: 5px;
+}
+.cntrpt {
+	background: $gold;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	@include centerV(10px);
+	@include centerH(10px);
+}
+.crown {
+	background: $grey;
+	height: 20px;
+	width: 10px;
+	right: -10px;
+	@include centerV(20px);
+}
+.hand {
+	background: $grey;
+	position: absolute;
+	transform-origin: 50% 100%;
+}
+.hours {
+	width: 6px;
+	height: $hourheight;
+	@include centerH(6px);
+	top: calc(70px - #{$hourheight});
+}
+.mins {
+	width: 4px;
+	height: $minheight;
+	@include centerH(4px);
+	top: calc(70px - #{$minheight});
+}
+.secs {
+	background: $red;
+	width: 2px;
+	height: $secheight;
+	@include centerH(2px);
+	top: calc(70px - #{$secheight});
+}
+.day {
+	background: $black;
+	color: $gold;
+	border: 1px solid $gold;
+	width: 18px;
+	height: 14px;
+	line-height: 14px;
+	text-align: center;
+	@include centerV(16px);
+	right: 28px;
+}
+.logo {
+	color: $gold;
+	width: 40px;
+	letter-spacing: 5px;
+	height: 12px;
+	line-height: 12px;
+	text-align: center;
+	@include centerH(40px);
+	top: 36px;
+}
 }
 
 h2 {
