@@ -4,6 +4,27 @@ window.mobilecheck = function() {
   return check;
 }
 
+document.body.addEventListener("mousemove", function(event) {
+    moveCursor(event);
+});
+var svgCursor = document.getElementById('svg-cursor');
+function moveCursor(e) {
+    var x = e.clientX - 5,
+        y = e.clientY - 5;
+    svgCursor.setAttribute('style', 'left: ' + x + 'px; top: ' + y + 'px');
+    if (e.target.className.indexOf('custom-cursor') > -1) {
+        switch (e.target.className) {
+            case 'custom-cursor custom-cursor--action':
+                svgCursor.setAttribute('class', 'svg-cursor svg-cursor__action')
+                break;
+            case 'custom-cursor custom-cursor--close':
+                svgCursor.setAttribute('class', 'svg-cursor svg-cursor__close')
+                break;
+        }
+    } else {
+        svgCursor.setAttribute('class', 'svg-cursor');
+    }
+}
 $(document).ready(function() {
     if (mobilecheck()) {
         $('html').addClass('mobile');
