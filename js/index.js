@@ -1,52 +1,221 @@
-window.mobilecheck = function() {
-  var check = false;
-  (function(a,b){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4)))check = true})(navigator.userAgent||navigator.vendor||window.opera);
-  return check;
-}
+(function() {
+    'use strict';
+    // 'To actually be able to display anything with Three.js, we need three things:
+    // A scene, a camera, and a renderer so we can render the scene with the camera.'
+    // - http://threejs.org/docs/#Manual/Introduction/Creating_a_scene
 
-document.body.addEventListener("mousemove", function(event) {
-    moveCursor(event);
-});
-var svgCursor = document.getElementById('svg-cursor');
-function moveCursor(e) {
-    var x = e.clientX - 5,
-        y = e.clientY - 5;
-    svgCursor.setAttribute('style', 'left: ' + x + 'px; top: ' + y + 'px');
-    if (e.target.className.indexOf('custom-cursor') > -1) {
-        switch (e.target.className) {
-            case 'custom-cursor custom-cursor--action':
-                svgCursor.setAttribute('class', 'svg-cursor svg-cursor__action')
-                break;
-            case 'custom-cursor custom-cursor--close':
-                svgCursor.setAttribute('class', 'svg-cursor svg-cursor__close')
-                break;
+    var scene, camera, renderer;
+
+    // I guess we need this stuff too
+    var container, HEIGHT,
+        WIDTH, fieldOfView, aspectRatio,
+        nearPlane, farPlane, stats,
+        geometry, particleCount,
+        i, h, color, size,
+        materials = [],
+        mouseX = 0,
+        mouseY = 0,
+        windowHalfX, windowHalfY, cameraZ,
+        fogHex, fogDensity, parameters = {},
+        parameterCount, particles;
+
+    init();
+    animate();
+
+    function init() {
+
+        HEIGHT = window.innerHeight;
+        WIDTH = window.innerWidth;
+        windowHalfX = WIDTH / 2;
+        windowHalfY = HEIGHT / 2;
+
+        fieldOfView = 75;
+        aspectRatio = WIDTH / HEIGHT;
+        nearPlane = 1;
+        farPlane = 3000;
+
+        /* 	fieldOfView — Camera frustum vertical field of view.
+	aspectRatio — Camera frustum aspect ratio.
+	nearPlane — Camera frustum near plane.
+	farPlane — Camera frustum far plane.
+
+	- http://threejs.org/docs/#Reference/Cameras/PerspectiveCamera
+
+	In geometry, a frustum (plural: frusta or frustums)
+	is the portion of a solid (normally a cone or pyramid)
+	that lies between two parallel planes cutting it. - wikipedia.		*/
+
+        cameraZ = farPlane / 3; /*	So, 1000? Yes! move on!	*/
+        fogHex = 0x000000; /* As black as your heart.	*/
+        fogDensity = 0.0007; /* So not terribly dense?	*/
+
+        camera = new THREE.PerspectiveCamera(fieldOfView, aspectRatio, nearPlane, farPlane);
+        camera.position.z = cameraZ;
+
+        scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(fogHex, fogDensity);
+
+        container = document.createElement('div');
+        document.body.appendChild(container);
+        document.body.style.margin = 0;
+        document.body.style.overflow = 'hidden';
+
+        geometry = new THREE.Geometry(); /*	NO ONE SAID ANYTHING ABOUT MATH! UGH!	*/
+
+        particleCount = 20000; /* Leagues under the sea */
+
+        /*	Hope you took your motion sickness pills;
+	We're about to get loopy.	*/
+
+        for (i = 0; i < particleCount; i++) {
+
+            var vertex = new THREE.Vector3();
+            vertex.x = Math.random() * 2000 - 1000;
+            vertex.y = Math.random() * 2000 - 1000;
+            vertex.z = Math.random() * 2000 - 1000;
+
+            geometry.vertices.push(vertex);
         }
-    } else {
-        svgCursor.setAttribute('class', 'svg-cursor');
+
+        /*	We can't stop here, this is bat country!	*/
+
+        parameters = [
+            [
+                [1, 1, 0.5], 5
+            ],
+            [
+                [0.95, 1, 0.5], 4
+            ],
+            [
+                [0.90, 1, 0.5], 3
+            ],
+            [
+                [0.85, 1, 0.5], 2
+            ],
+            [
+                [0.80, 1, 0.5], 1
+            ]
+        ];
+        parameterCount = parameters.length;
+
+        /*	I told you to take those motion sickness pills.
+	Clean that vommit up, we're going again!	*/
+
+        for (i = 0; i < parameterCount; i++) {
+
+            color = parameters[i][0];
+            size = parameters[i][1];
+
+            materials[i] = new THREE.PointCloudMaterial({
+                size: size
+            });
+
+            particles = new THREE.PointCloud(geometry, materials[i]);
+
+            particles.rotation.x = Math.random() * 6;
+            particles.rotation.y = Math.random() * 6;
+            particles.rotation.z = Math.random() * 6;
+
+            scene.add(particles);
+        }
+
+        /*	If my calculations are correct, when this baby hits 88 miles per hour...
+	you're gonna see some serious shit.	*/
+
+        renderer = new THREE.WebGLRenderer(); /*	Rendererererers particles.	*/
+        renderer.setPixelRatio(window.devicePixelRatio); /*	Probably 1; unless you're fancy.	*/
+        renderer.setSize(WIDTH, HEIGHT); /*	Full screen baby Wooooo!	*/
+
+        container.appendChild(renderer.domElement); /* Let's add all this crazy junk to the page.	*/
+
+        /*	I don't know about you, but I like to know how bad my
+		code is wrecking the performance of a user's machine.
+		Let's see some damn stats!	*/
+
+        stats = new Stats();
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.top = '0px';
+        stats.domElement.style.right = '0px';
+        container.appendChild(stats.domElement);
+
+        /* Event Listeners */
+
+        window.addEventListener('resize', onWindowResize, false);
+        document.addEventListener('mousemove', onDocumentMouseMove, false);
+        document.addEventListener('touchstart', onDocumentTouchStart, false);
+        document.addEventListener('touchmove', onDocumentTouchMove, false);
+
     }
-}
-$(document).ready(function() {
-    if (mobilecheck()) {
-        $('html').addClass('mobile');
-    } else {
-        $('.section').addClass('initing');
-        $('#pagepiling').pagepiling({
-            loopBottom: true,
-            navigation: {
-                'position': 'left',
-                'tooltips': ['Home', 'Skills', 'Education', 'Jobs Preferred', 'Contact Me']
-            },
-            onLeave: function(index, nextIndex, direction) {
-                var $pages = $('.section');
-                for (var i = 0; i < $pages.length; ++i) {
-                    if (i + 1 !== nextIndex) {
-                        $($pages[i]).addClass('leaving');
-                    } else {
-                        $($pages[i]).removeClass('leaving');
-                    }
-                }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        render();
+        stats.update();
+    }
+
+    function render() {
+        var time = Date.now() * 0.00005;
+
+        camera.position.x += (mouseX - camera.position.x) * 0.05;
+        camera.position.y += (-mouseY - camera.position.y) * 0.05;
+
+        camera.lookAt(scene.position);
+
+        for (i = 0; i < scene.children.length; i++) {
+
+            var object = scene.children[i];
+
+            if (object instanceof THREE.PointCloud) {
+
+                object.rotation.y = time * (i < 4 ? i + 1 : -(i + 1));
             }
-        });
-        $('.initing').removeClass('initing');
+        }
+
+        for (i = 0; i < materials.length; i++) {
+
+            color = parameters[i][0];
+
+            h = (360 * (color[0] + time) % 360) / 360;
+            materials[i].color.setHSL(h, color[1], color[2]);
+        }
+
+        renderer.render(scene, camera);
     }
-});
+
+    function onDocumentMouseMove(e) {
+        mouseX = e.clientX - windowHalfX;
+        mouseY = e.clientY - windowHalfY;
+    }
+
+    /*	Mobile users?  I got your back homey	*/
+
+    function onDocumentTouchStart(e) {
+
+        if (e.touches.length === 1) {
+
+            e.preventDefault();
+            mouseX = e.touches[0].pageX - windowHalfX;
+            mouseY = e.touches[0].pageY - windowHalfY;
+        }
+    }
+
+    function onDocumentTouchMove(e) {
+
+        if (e.touches.length === 1) {
+
+            e.preventDefault();
+            mouseX = e.touches[0].pageX - windowHalfX;
+            mouseY = e.touches[0].pageY - windowHalfY;
+        }
+    }
+
+    function onWindowResize() {
+
+        windowHalfX = window.innerWidth / 2;
+        windowHalfY = window.innerHeight / 2;
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+})();
